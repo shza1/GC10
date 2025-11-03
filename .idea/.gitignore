@@ -1,0 +1,83 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# ===========================
+# Backend (Java/Spring Boot)
+# Path: backend/springboot/
+# ===========================
+backend/springboot/target/
+backend/springboot/.mvn/
+backend/springboot/mvnw
+backend/springboot/mvnw.cmd
+backend/springboot/*.jar
+backend/springboot/*.war
+backend/springboot/HELP.md
+
+# IntelliJ IDEA
+backend/springboot/.idea/
+backend/springboot/*.iml
+backend/springboot/*.iws
+backend/springboot/*.ipr
+
+# Spring Boot
+backend/springboot/.springBeans
+backend/springboot/.sts4-cache
+backend/springboot/.apt_generated
+backend/springboot/.classpath
+backend/springboot/.factorypath
+backend/springboot/.project
+backend/springboot/.settings/
+
+# Build output
+backend/springboot/build/
+
+# ===========================
+# Frontend (React/Node.js)
+# ===========================
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# ===========================
+# General
+# ===========================
+.DS_Store
+*.log
+.env
+*.swp
+*.swo
+*~
+
+# ===========================
+# IDEs (Root level)
+# ===========================
+.idea/
+*.iml
+.vscode/
+.eclipse/
+```
+
+---
+
+## File Paths for Configuration
+
+### application.properties Location:
+backend/springboot/src/main/resources/application.properties
+
+### Test properties Location:
+backend/springboot/src/test/resources/application-test.properties
+
+### Main Application Class:
+backend/springboot/src/main/java/com/yourcompany/ecommerce/EcommerceApplication.java
