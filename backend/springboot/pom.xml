@@ -12,7 +12,7 @@
     <artifactId>ecommerce-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>springboot</name>
-    <description>springboot</description>
+    <description>Full stack application using Spring Boot and Vite+React</description>
     <url/>
     <licenses>
         <license/>
