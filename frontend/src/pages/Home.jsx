@@ -40,7 +40,7 @@ export default function Home() {
         }}
       >
         <Typography variant="h2" gutterBottom>
-          Welcome to ShopHub
+          Welcome to Inkhouse
         </Typography>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Discover amazing products at great prices

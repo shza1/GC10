@@ -60,7 +60,7 @@ export default function Header({ onThemeToggle, mode }) {
           sx={{ cursor: 'pointer', fontWeight: 700 }}
           onClick={() => navigate('/')}
         >
-          ShopHub
+          Inkhouse
         </Typography>
 
         <Box
