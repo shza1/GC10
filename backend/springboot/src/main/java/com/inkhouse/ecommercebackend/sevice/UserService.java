@@ -10,5 +10,5 @@ public interface UserService {
     public User getUserById(int id);
     public User updateUser(User user);
     public void deleteUser(int id);
-    public List<User> getAllUsers();
+    public Iterable<User> getAllUsers();
 }
