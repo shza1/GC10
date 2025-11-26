@@ -521,6 +521,103 @@ SELECT size_label, finish_label, qty_available
 FROM product_variants
 WHERE product_id = (SELECT product_id FROM products WHERE title='Premade UTSA Skyline' LIMIT 1);
 
+-- 11) Admin Views & Indexes
+-- These views are meant to support the administrative side of the application.
+-- Provide a clean way to see orders, order items, and custom designs
+
+-- View: High-level order information for admins
+-- Shows each order with the customer email, status, dates, and totals.
+CREATE OR REPLACE VIEW v_orders_admin AS
+SELECT
+  o.order_id,
+  o.user_id,
+  u.email       AS customer_email,
+  o.status,
+  o.placed_at,
+  o.subtotal_cents,
+  o.discount_cents,
+  o.tax_cents,
+  o.total_cents,
+  ROUND(o.subtotal_cents / 100, 2) AS subtotal_usd,
+  ROUND(o.discount_cents / 100, 2) AS discount_usd,
+  ROUND(o.tax_cents / 100, 2)      AS tax_usd,
+  ROUND(o.total_cents / 100, 2)    AS total_usd
+FROM orders o
+JOIN users u ON u.user_id = o.user_id;
+
+-- View: Order item breakdown for admins
+-- Shows each line item in an order, including:
+--   - The customer it belongs to
+--   - The poster title, size, and finish
+--   - Quantity and unit price
+CREATE OR REPLACE VIEW v_order_items_admin AS
+SELECT
+  oi.order_item_id,
+  oi.order_id,
+  u.email       AS customer_email,
+  oi.title_snapshot,
+  oi.size_label,
+  oi.finish_label,
+  oi.qty,
+  oi.unit_price_cents,
+  ROUND(oi.unit_price_cents / 100, 2) AS unit_price_usd
+FROM order_items oi
+JOIN orders o ON o.order_id = oi.order_id
+JOIN users  u ON u.user_id  = o.user_id;
+
+-- View: Custom designs for admin review
+-- Aids admins see which custom posters are pending, approved, or rejected,
+-- Displays who submitted them and when.
+CREATE OR REPLACE VIEW v_custom_designs_admin AS
+SELECT
+  d.design_id,
+  d.user_id,
+  u.email       AS customer_email,
+  d.image_url,
+  d.size_label,
+  d.finish_label,
+  d.price_cents,
+  ROUND(d.price_cents / 100, 2) AS price_usd,
+  d.status,
+  d.created_at,
+  d.updated_at
+FROM custom_designs d
+JOIN users u ON u.user_id = d.user_id;
+
+
+
+-- Helpful indexes for common admin queries
+-- These are aimed at sorting/filtering orders in the admin backend
+-- Work through date, customer, and order size.
+
+-- Orders by date (recent first)
+CREATE INDEX idx_orders_placed_at ON orders (placed_at DESC);
+
+-- Orders by user + date
+CREATE INDEX idx_orders_user_date ON orders (user_id, placed_at DESC);
+
+-- Orders by total size in cents (for "largest orders")
+CREATE INDEX idx_orders_total_cents ON orders (total_cents DESC);
+
+
+
+-- Quick admin checks (additional and optional to run)
+-- Recent orders:
+--   SELECT * FROM v_orders_admin ORDER BY placed_at DESC LIMIT 10;
+--
+-- Largest orders:
+--   SELECT * FROM v_orders_admin ORDER BY total_cents DESC LIMIT 10;
+--
+-- Orders for a specific customer:
+--   SELECT * FROM v_orders_admin
+--   WHERE customer_email = 'ariel@example.com'
+--   ORDER BY placed_at DESC;
+--
+-- Pending custom designs:
+--   SELECT * FROM v_custom_designs_admin
+--   WHERE status = 'pending'
+--   ORDER BY created_at DESC;
+
 
 
 
