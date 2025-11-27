@@ -57,6 +57,40 @@ Key Features Implemented:
      - Updates inventory quantities
      - Clears the cart after checkout
 
+• Administrative Views  
+  To support the administrative backend of the application, the database includes
+  several read-only views that organize system data in a format tailored for 
+  management and oversight. These views make it easier for administrators to
+  track customer orders, inspect individual order items, and review custom 
+  designs awaiting approval.
+
+     - v_orders_admin: Summarizes each order with customer information, 
+       timestamps, subtotal, discount, tax, and total.
+     - v_order_items_admin: Breaks down each purchased item, including size, 
+       finish, unit price, and quantity.
+     - v_custom_designs_admin: Shows all custom poster submissions along with 
+       their status (pending, approved, rejected) and associated customer.
+
+• Administrative Indexes  
+  Additional indexes were added to improve performance for administrative queries 
+  that sort or filter orders by common fields. This supports requirements such as 
+  sorting by date, customer, and total order amount.
+
+     - idx_orders_placed_at  
+     - idx_orders_user_date  
+     - idx_orders_total_cents
+
+------------------------------------------------------------
+Administrative Capabilities Overview:
+------------------------------------------------------------
+The database now provides complete support for the administrative features 
+outlined in the project requirements. Administrators can inspect product and 
+variant data, review and manage custom design submissions, create and maintain 
+discount codes, and view all customer orders in both high-level and detailed 
+formats. The provided views offer a streamlined way to access this information 
+without requiring complex JOINs in the backend, helping maintain a clean and 
+organized administrative workflow.
+
 ------------------------------------------------------------
 Testing the Procedure:
 ------------------------------------------------------------
@@ -79,6 +113,18 @@ Developer/Student Notes:
 - Default tax rate: 8.25% (825 basis points)
 - Default seed user (Name used for example): ariel@example.com
 - Example discount: WELCOME10 → 10% off
+
+------------------------------------------------------------
+Troubleshooting:
+------------------------------------------------------------
+- If you receive “No database selected”, run:
+      USE inkhouse;
+
+- If MySQL reports “Duplicate key name”, the index already exists. This is normal 
+  when re-running the script and does not indicate an error.
+
+- If the stored procedure already exists and prevents re-creation, drop it using:
+      DROP PROCEDURE IF EXISTS sp_place_order;
 
 ------------------------------------------------------------
 Author:
