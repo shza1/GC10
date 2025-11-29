@@ -26,7 +26,7 @@ export default function Home() {
   const categories = productService.getCategories();
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4, px: {xs: 2, md: 4 } }}>
       {/* Hero Section */}
       <Box
         sx={{

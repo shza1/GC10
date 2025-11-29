@@ -6,11 +6,23 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import { routes } from './routes';
+import {createTheme} from "@mui/material/styles";
 
 function App() {
   const [mode, setMode] = useState('light');
 
-  const theme = useMemo(() => getTheme(mode), [mode]);
+    const theme = useMemo(() => {
+        const baseTheme = getTheme(mode);
+        return createTheme(baseTheme, {
+            components: {
+                MuiContainer: {
+                    defaultProps: {
+                        maxWidth: false,
+                    },
+                },
+            },
+        });
+    }, [mode]);
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
