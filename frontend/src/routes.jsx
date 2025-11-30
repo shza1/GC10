@@ -14,6 +14,7 @@ const Account = lazy(() => import('./pages/Account'));
 const Orders = lazy(() => import('./pages/Orders'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminProducts = lazy(() => import('./pages/AdminProducts'));
 
 // Private route wrapper
 function PrivateRoute({ children }) {
@@ -79,6 +80,14 @@ export const routes = [
     element: (
       <PrivateRoute>
         <AdminUsers />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/admin/products',
+    element: (
+      <PrivateRoute>
+        <AdminProducts />
       </PrivateRoute>
     ),
   },

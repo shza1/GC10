@@ -121,6 +121,9 @@ export default function Header({ onThemeToggle, mode }) {
               <MenuItem onClick={() => { navigate('/admin/users'); handleMenuClose(); }}>
                 Admin: Users
               </MenuItem>
+              <MenuItem onClick={() => { navigate('/admin/products'); handleMenuClose(); }}>
+                Admin: Products
+              </MenuItem>
               <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
             </Menu>
           </>

@@ -54,7 +54,7 @@ export default function Footer() {
           </Grid>
         </Grid>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4 }}>
-          © {new Date().getFullYear()} ShopHub. All rights reserved.
+          © {new Date().getFullYear()} Inkhouse. All rights reserved.
         </Typography>
       </Container>
     </Box>
