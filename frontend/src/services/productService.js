@@ -1,169 +1,145 @@
-// Mock product data - replace with actual API calls
-const mockProducts = [
-  {
-    id: '1',
-    name: 'Skiing on the Slopes',
-    price: 29.99,
-    rating: 4.5,
-    reviewCount: 128,
-    inStock: true,
-    image: '/src/assets/skiing-sm.jpg',
-    description: 'Woman skiing poster.',
-    category: 'Posters',
-    specs: {
-        'Thickness': '6mm',
-        'Material': 'Lamented Wood',
-        'Size': '3ft x 1ft',
-    },
-  },
-  {
-    id: '2',
-    name: 'Clean your Teeth',
-    price: 29.99,
-    rating: 4.7,
-    reviewCount: 256,
-    inStock: true,
-    image: '/src/assets/clean-teeth-sm.jpg',
-    description: 'Teeth cleaning poster.',
-    category: 'Electronics',
-    specs: {
-        'Thickness': '6mm',
-        'Material': 'Lamented Wood',
-        'Size': '3ft x 1ft',
-    },
-  },
-  {
-    id: '3',
-    name: 'Poster Collage',
-    price: 29.99,
-    rating: 4.3,
-    reviewCount: 94,
-    inStock: true,
-    image: '/src/assets/collage-sm.jpg',
-    description: 'Poster collage.',
-    category: 'Posters',
-    specs: {
-        'Thickness': '6mm',
-        'Material': 'Lamented Wood',
-        'Size': '3ft x 1ft',
-    },
-  },
-  {
-    id: '4',
-    name: 'Missing Person',
-    price: 29.99,
-    rating: 4.6,
-    reviewCount: 187,
-    inStock: false,
-    image: '/src/assets/missing-sm.jpg',
-    description: 'Missing person poster.',
-    category: 'Posters',
-    specs: {
-        'Thickness': '6mm',
-        'Material': 'Lamented Wood',
-        'Size': '3ft x 1ft',
-    },
-  },
-  {
-    id: '5',
-    name: 'Uncle Sam',
-    price: 29.99,
-    rating: 4.4,
-    reviewCount: 76,
-    inStock: true,
-    image: '/src/assets/uncle-sam-sm.jpg',
-    description: 'Uncle Sam Poster.',
-    category: 'Posters',
-    specs: {
-      'Thickness': '6mm',
-      'Material': 'Lamented Wood',
-      'Size': '3ft x 1ft',
-    },
-  },
-  {
-    id: '6',
-    name: 'Camera Head',
-    price: 29.99,
-    rating: 4.5,
-    reviewCount: 100,
-    inStock: true,
-    image: '/src/assets/camera-head-sm.jpg',
-    description: 'Camera Head Guy Poster.',
-    category: 'Posters',
-    specs: {
-        'Thickness': '6mm',
-        'Material': 'Lamented Wood',
-        'Size': '3ft x 1ft',
-    },
-  },
-];
+// src/services/productService.js
+// Bridges between the backend Product schema and the UI components
+import { productsApi } from './productsApi';
+
+// Maps backend Product → shape used by ProductCard / ProductDetail / cart
+function mapProduct(p) {
+    if (!p) return null;
+
+    // Backend fields: id, title, description, imageUrl, basePriceCents, qtyAvailable, isActive, createdAt, updatedAt
+    const price =
+        typeof p.basePriceCents === 'number'
+            ? p.basePriceCents / 100
+            : Number(p.basePriceCents || 0) / 100;
+
+    const stockQty =
+        typeof p.qtyAvailable === 'number'
+            ? p.qtyAvailable
+            : Number(p.qtyAvailable || 0);
+
+    return {
+        // Core identity
+        id: p.id,
+        name: p.title,
+        description: p.description,
+        image: p.imageUrl,
+
+        // Price in dollars for UI
+        price,
+        basePriceCents: p.basePriceCents,
+
+        // Inventory / status
+        stockQuantity: stockQty,
+        inStock: stockQty > 0 && p.isActive !== false,
+        isActive: p.isActive !== false,
+
+        // Extra stuff used by UI (safe defaults for now)
+        rating: p.rating ?? 0,
+        reviewCount: p.reviewCount ?? 0,
+        category: p.category || 'Posters',
+        specs: p.specs || {},
+
+        // Timestamps
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+    };
+}
+
+// This list backs Catalog filter dropdown
+const CATEGORY_LIST = ['Posters', 'Photography', 'Abstract', 'Typography'];
+
+function applyFilters(items, filters = {}) {
+    let result = [...items];
+
+    const {
+        category,
+        minPrice,
+        maxPrice,
+        minRating,
+        inStock,
+        sortBy,
+        search,
+    } = filters || {};
+
+    if (search) {
+        const term = search.toLowerCase();
+        result = result.filter((p) => p.name.toLowerCase().includes(term));
+    }
+
+    if (category) {
+        result = result.filter((p) => p.category === category);
+    }
+
+    if (typeof minPrice === 'number') {
+        result = result.filter((p) => p.price >= minPrice);
+    }
+
+    if (typeof maxPrice === 'number') {
+        result = result.filter((p) => p.price <= maxPrice);
+    }
+
+    if (minRating) {
+        result = result.filter((p) => (p.rating ?? 0) >= minRating);
+    }
+
+    if (inStock) {
+        result = result.filter((p) => p.inStock);
+    }
+
+    switch (sortBy) {
+        case 'price-asc':
+            result.sort((a, b) => a.price - b.price);
+            break;
+        case 'price-desc':
+            result.sort((a, b) => b.price - a.price);
+            break;
+        case 'rating':
+            result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+            break;
+        // 'featured' → leave as-is
+    }
+
+    return result;
+}
 
 export const productService = {
-  async getAll(filters = {}) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    
-    let filtered = [...mockProducts];
+    // Used on Home.jsx
+    async getFeatured(limit = 6) {
+        const raw = await productsApi.getProducts();
+        const mapped = raw.map(mapProduct).filter(Boolean);
+        // Simple "featured": newest first based on createdAt
+        const sorted = [...mapped].sort((a, b) => {
+            const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return db - da;
+        });
+        return sorted.slice(0, limit);
+    },
 
-    // Apply filters
-    if (filters.category) {
-      filtered = filtered.filter((p) => p.category === filters.category);
-    }
-    if (filters.minPrice) {
-      filtered = filtered.filter((p) => p.price >= filters.minPrice);
-    }
-    if (filters.maxPrice) {
-      filtered = filtered.filter((p) => p.price <= filters.maxPrice);
-    }
-    if (filters.minRating) {
-      filtered = filtered.filter((p) => p.rating >= filters.minRating);
-    }
-    if (filters.inStock) {
-      filtered = filtered.filter((p) => p.inStock);
-    }
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower)
-      );
-    }
+    // Used on Catalog.jsx
+    async getAll(filters) {
+        const raw = await productsApi.getProducts();
+        const mapped = raw.map(mapProduct).filter(Boolean);
+        return applyFilters(mapped, filters);
+    },
 
-    // Apply sorting
-    if (filters.sortBy === 'price-asc') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (filters.sortBy === 'price-desc') {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (filters.sortBy === 'rating') {
-      filtered.sort((a, b) => b.rating - a.rating);
-    }
+    // Used on ProductDetail.jsx
+    async getById(id) {
+        const raw = await productsApi.getProductById(id);
+        return mapProduct(raw);
+    },
 
-    return filtered;
-  },
+    // Used on ProductDetail.jsx for the "You might also like" section
+    async getRelated(currentId, limit = 4) {
+        const raw = await productsApi.getProducts();
+        const mapped = raw.map(mapProduct).filter(Boolean);
+        return mapped
+            .filter((p) => String(p.id) !== String(currentId))
+            .slice(0, limit);
+    },
 
-  async getById(id) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockProducts.find((p) => p.id === id) || null;
-  },
-
-  async getRelated(productId, limit = 4) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const product = mockProducts.find((p) => p.id === productId);
-    if (!product) return [];
-
-    return mockProducts
-      .filter((p) => p.id !== productId && p.category === product.category)
-      .slice(0, limit);
-  },
-
-  async getFeatured(limit = 6) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockProducts
-      .filter((p) => p.inStock)
-      .sort((a, b) => b.rating - a.rating)
-      .slice(0, limit);
-  },
-
-  getCategories() {
-    return [...new Set(mockProducts.map((p) => p.category))];
-  },
+    // Used on Catalog.jsx for category dropdown
+    getCategories() {
+        return CATEGORY_LIST;
+    },
 };

@@ -41,7 +41,6 @@ export default function AdminProducts() {
     });
     const [submitting, setSubmitting] = useState(false);
 
-    // Load products on mount
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -72,13 +71,11 @@ export default function AdminProducts() {
         });
     };
 
-    // Open dialog to create a new product
     const handleCreate = () => {
         resetForm();
         setOpenDialog(true);
     };
 
-    // Open dialog to edit an existing product
     const handleEdit = (product) => {
         setEditingProduct(product);
         setFormData({
@@ -117,7 +114,6 @@ export default function AdminProducts() {
         return null;
     };
 
-    // Create / update product
     const handleSubmit = async () => {
         const validationError = validateForm();
         if (validationError) {
@@ -129,13 +125,15 @@ export default function AdminProducts() {
         setError(null);
 
         try {
+            const basePriceCents = Math.round(Number(formData.priceDollars) * 100);
+            const qtyAvailable = parseInt(formData.qtyAvailable, 10);
+
             const payload = {
-                // field names here should match your updated Product entity
                 title: formData.title.trim(),
-                description: formData.description.trim(),
+                description: formData.description.trim() || null,
                 imageUrl: formData.imageUrl.trim() || null,
-                basePriceCents: Math.round(parseFloat(formData.priceDollars) * 100),
-                qtyAvailable: parseInt(formData.qtyAvailable, 10),
+                basePriceCents,
+                qtyAvailable,
                 isActive: !!formData.isActive,
             };
 
@@ -156,7 +154,6 @@ export default function AdminProducts() {
         }
     };
 
-    // Delete product
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this product?')) {
             return;
@@ -294,7 +291,6 @@ export default function AdminProducts() {
                 </Paper>
             )}
 
-            {/* Create/Edit Dialog */}
             <Dialog
                 open={openDialog}
                 onClose={() => setOpenDialog(false)}
